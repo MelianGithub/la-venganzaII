@@ -1,51 +1,57 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const URL = 'https://crudcrud.com/api/adc54d7744e946cd8ffc1851accabb6d/grupo255';
+let array = [];
+let editarID = '';
 
-    setInterval(() => {
-        console.log('1500 segundos');
-        mostrarDatos();
-    }, 5500);
+const URL = 'https://crudcrud.com/api/adc54d7744e946cd8ffc1851accabb6d/Emanuel';
 
-    const submit = document.getElementById('submit');
+setInterval(() => {
+    mostrarDatos();
+}, 5000);
 
-    submit.addEventListener('click', async () => {
-        let nombre = document.getElementById('nombre').value;
-        let apellido = document.getElementById('apellido').value;
-        let grupo = document.getElementById('grupo').value;
-        let number = document.getElementById('numero').value;
+const submit = document.getElementById('submit');
 
-        try {
-            const response = await fetch(URL, {
-                headers: { "Content-Type": "application/json; charset=utf-8" },
-                method: 'POST',
-                body: JSON.stringify({
-                    nombre: nombre,
-                    apellido: apellido,
-                    grupo: grupo,
-                    number: number
-                })
-            });
-            const data = await response.json();
-            console.log(data);
-            mostrarDatos();
-        } catch (error) {
-            console.error("Error al agregar el elemento:", error);
-        }
-    });
+submit.addEventListener('click', () => {
+    let nombre = document.getElementById('nombre').value;
+    let apellido = document.getElementById('apellido').value;
+    let grupo = document.getElementById('grupo').value;
+    let number = document.getElementById('numero').value;
 
-    const contenedor = document.getElementById('contenedor');
 
-    async function mostrarDatos() {
-        contenedor.innerHTML = '';
+    fetch(URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            nombre: nombre,
+            apellido: apellido,
+            grupo: grupo,
+            number: number,
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Datos actualizados y respuesta recibida:', data);
+        })
+        .catch(error => {
+            console.error('Error al actualizar datos:', error);
+        });
+    mostrarDatos();
 
-        try {
-            const resp = await fetch(URL);
-            const datos = await resp.json();
+});
+
+
+function mostrarDatos() {
+    contenedor.innerHTML = '';
+
+    fetch(URL)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Datos obtenidos:', data);
 
             let lista = document.createElement('ul');
             lista.classList.add('list-group', 'm-5');
-            
-            let array = datos;
+
+            array = data;
 
             array.forEach(element => {
                 let li = document.createElement('li');
@@ -56,13 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 let id = element._id;
 
                 li.innerHTML = `
-                    <li>${nombre}</li>
-                    <li>${apellido}</li>
-                    <li>${grupo}</li>
-                    <li>${number}</li>
-                    <button id="${id}" class="eliminar"><i class='bx bx-message-square-x'></i></button>
-                    <br>`;
-                
+                            <li>${nombre}</li>
+                            <li>${apellido}</li>
+                            <li>${grupo}</li>
+                            <li>${number}</li>
+                            <button id="${id}" class="eliminar"><i class='bx bx-message-square-x'></i></button>
+                            <button id="${id}" class="editar">Editar</button>
+                            `;
+
                 lista.appendChild(li);
             });
 
@@ -71,26 +78,68 @@ document.addEventListener("DOMContentLoaded", () => {
             const eliminarData = document.querySelectorAll(".eliminar");
 
             eliminarData.forEach(eliminar => {
-                eliminar.addEventListener('click', async () => {
+                eliminar.addEventListener('click', () => {
                     const id = eliminar.id;
 
-                    try {
-                        await fetch(URL + "/" + id, {
-                            method: 'DELETE',
-                            headers: {
-                                'Content-type': 'application/json; charset=UTF-8'
-                            },
-                        });
-                        mostrarDatos();
-                    } catch (error) {
-                        console.error("Error al eliminar el elemento:", error);
-                    }
+
+                    fetch(URL + "/" + id, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-type': 'application/json; charset=UTF-8'
+                        },
+                    });
+                    mostrarDatos();
                 });
             });
-        } catch (error) {
-            console.error("Error al obtener los datos:", error);
+
+        })
+}
+
+
+const contenedor = document.getElementById('contenedor');
+const modificar = document.getElementById('editarForm'); // Mover aquí el botón modificar
+
+modificar.addEventListener('click', () => {
+    
+    let nuevodNombre = document.getElementById('nombre').value;
+    let nuevoApellido = document.getElementById('apellido').value;
+    let nuevoGrupo = document.getElementById('grupo').value;
+    let nuevoNumber = document.getElementById('numero').value;
+
+    fetch(URL + "/" + editarID, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            nombre: nuevodNombre,
+            apellido: nuevoApellido,
+            grupo: nuevoGrupo,
+            number: nuevoNumber,
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Datos actualizados y respuesta recibida:', data);
+        })
+});
+
+//Tuve que hacer esto porque fue la única forma de que tomara las clases de editar, no me funcionó con queryselectorAll o con otras formas.
+contenedor.addEventListener('click', (event) => {
+    if (event.target.classList.contains('editar')) {
+        editarID = event.target.id;
+
+        let elementoAEditar = array.find(element => element._id === editarID);
+
+        if (elementoAEditar) {
+            modificar.classList.remove('no-visible');
+            submit.classList.add('no-visible');
+
+            nombre.value = elementoAEditar.nombre;
+            apellido.value = elementoAEditar.apellido;
+            grupo.value = elementoAEditar.grupo;
+            number.value = elementoAEditar.number;
         }
     }
-
-
 });
+
