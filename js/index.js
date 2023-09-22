@@ -150,7 +150,7 @@ contenedor.addEventListener('click', (event) => {
             nombre.value = elementoAEditar.nombre;
             apellido.value = elementoAEditar.apellido;
             grupo.value = elementoAEditar.grupo;
-            numero.value = elementoAEditar.sala;
+            numero.value = elementoAEditar.room;
         }
     }
 });
